@@ -151,6 +151,23 @@ class Action(models.Model):
         return ('actstream.views.detail', [self.pk])
 
 
+"""
+Add our api permission handler methods to the Action class
+"""
+def action_can_read(self, **kwargs):
+    return True
+
+def action_can_edit(self, **kwargs):
+    return True
+
+def action_can_delete(self, **kwargs):
+    return True
+
+Action.add_to_class('can_read', action_can_read)
+Action.add_to_class('can_edit', action_can_edit)
+Action.add_to_class('can_delete', action_can_delete)
+
+
 # convenient accessors
 actor_stream = Action.objects.actor
 action_object_stream = Action.objects.action_object
