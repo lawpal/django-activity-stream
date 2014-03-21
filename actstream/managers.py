@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from actstream.gfk import GFKManager
 from actstream.decorators import stream
+from actstream.settings import USE_FOLLOWING
 
 
 class ActionManager(GFKManager):
@@ -67,6 +68,10 @@ class ActionManager(GFKManager):
         qs = self.filter(public=True)
         actors_by_content_type = defaultdict(lambda: [])
         others_by_content_type = defaultdict(lambda: [])
+
+
+        if USE_FOLLOWING is False:
+            return qs.none()
 
         follow_gfks = get_model('actstream', 'follow').objects.filter(
             user=object).values_list('content_type_id',

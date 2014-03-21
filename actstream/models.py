@@ -5,6 +5,7 @@ from django.utils.translation import ugettext as _
 
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from toolkit.core.mixins import IsDeletedMixin
 
 try:
     from django.utils import timezone
@@ -18,6 +19,8 @@ from actstream.signals import action
 from actstream.actions import action_handler
 from actstream.managers import FollowManager
 from actstream.compat import user_model_label
+
+from rulez import registry as rulez_registry
 
 User = user_model_label
 
@@ -43,7 +46,7 @@ class Follow(models.Model):
         return u'%s -> %s' % (self.user, self.follow_object)
 
 
-class Action(models.Model):
+class Action(IsDeletedMixin, models.Model):
     """
     Action model describing the actor acting out a verb (on an optional
     target).
@@ -150,22 +153,21 @@ class Action(models.Model):
     def get_absolute_url(self):
         return ('actstream.views.detail', [self.pk])
 
+    """
+    Add our api permission handler methods to the Action class
+    """
+    def can_read(self, **kwargs):
+        return True
 
-"""
-Add our api permission handler methods to the Action class
-"""
-def action_can_read(self, **kwargs):
-    return True
+    def can_edit(self, **kwargs):
+        return True
 
-def action_can_edit(self, **kwargs):
-    return True
+    def can_delete(self, **kwargs):
+        return True
 
-def action_can_delete(self, **kwargs):
-    return True
-
-Action.add_to_class('can_read', action_can_read)
-Action.add_to_class('can_edit', action_can_edit)
-Action.add_to_class('can_delete', action_can_delete)
+rulez_registry.register('can_read', Action)
+rulez_registry.register('can_edit', Action)
+rulez_registry.register('can_delete', Action)
 
 
 # convenient accessors
